@@ -74,6 +74,23 @@ Windsurf opens the Storylink sign-in page when it first connects.
 
 Use the URL `https://storylink.pro/mcp` with the Streamable HTTP transport. The server uses the MCP authorization flow (OAuth 2.1 with PKCE and dynamic client registration). A request without a valid token gets a `401` response with a `WWW-Authenticate` header. That header points to `https://storylink.pro/.well-known/oauth-protected-resource`.
 
+### Clients that support only stdio
+
+Some MCP clients can start only a local (stdio) server. For these clients, use [`mcp-remote`](https://www.npmjs.com/package/mcp-remote). It runs on your computer and connects to `https://storylink.pro/mcp` for the client. It needs Node.js 18 or later.
+
+```json
+{
+  "mcpServers": {
+    "storylink": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://storylink.pro/mcp"]
+    }
+  }
+}
+```
+
+When it first connects, `mcp-remote` opens the Storylink sign-in page in your browser. To use an API key instead, add `"--header", "Authorization: Bearer sl_live_…"` to the end of `args`.
+
 ## Connect with a Business API key
 
 1. In Storylink, open the **Developers** page and create an API key (`sl_live_…`). A key can be for one workspace or for the full account.
@@ -106,7 +123,7 @@ A key on a plan without API access gets a `402` response (`plan_not_entitled`).
 
 These rules apply to the read tools:
 
-- **Workspaces.** A company has one or more workspaces, one for each client or brand. Each workspace has its connected Instagram account. When you sign in with Storylink, each read tool except `whoami` and `list_workspaces` has an optional `workspace` argument (the id or slug from `list_workspaces`). Without it, the tool answers for the default workspace and says which workspace it used. An API key has no `workspace` argument. A key answers for its own workspace. For an account-wide key, `get_summary` and `top_content` answer for the oldest workspace of the company.
+- **Workspaces.** A company has one or more workspaces, one for each client or brand. Each workspace has its connected Instagram account. When you sign in with Storylink, each read tool except `whoami` and `list_workspaces` has an optional `workspace` argument (the id or slug from `list_workspaces`). Without it, the tool answers for the default workspace and says which workspace it used. An API key has no `workspace` argument. A key answers for its own workspace. For an account-wide key, all the tools answer for the oldest workspace of the company. `list_workspaces` shows all the workspaces of the company, and it marks the workspace that the tools answer for with `tools_answer_here: true`. To read a different workspace, use a key for that workspace, or sign in with Storylink.
 - **Ranges.** `range` is `7d` (the default), `30d` or `90d`. It can also be a custom window of UTC dates, for example `{ "from": "2026-10-01", "to": "2026-10-14" }`. Both dates are in the window. A custom window is 366 days or less.
 - **Comparisons.** A change is always against the period of equal length right before the range. For example, `30d` compares with the 30 days before it. `change_pct` is `null` when the previous value is less than 20. Then compare the two numbers.
 - **Answers.** When you sign in with Storylink, each tool answer starts with a one-line summary. The data follows as JSON. With an API key, `list_workspaces`, `get_summary` and `top_content` answer in the same way. The other tools answer with JSON only.
@@ -145,7 +162,9 @@ A Business API key always has the full history.
 ## Prompts
 
 - `weekly_brief(workspace?)`: this week's Instagram results against last week. It gives the totals, the best and worst content, and one thing to try next week.
-- `why_did_views_drop(workspace)`: finds when views started to drop, and the most probable cause from the data.
+- `why_did_views_drop(workspace?)`: finds when views started to drop, and the most probable cause from the data.
+
+Without `workspace`, a prompt is for the default workspace. With an API key, the prompts have no `workspace` argument: they are for the workspace of the key.
 
 ## Example questions
 
@@ -174,7 +193,7 @@ In Claude Code, one plugin installs the skills and this server:
 
 - **Sign in with Storylink is read-only.** The consent screen says so. The server does not register a write tool for this connection, so a client cannot list or call one. The connection can read only the workspaces of your own company.
 - **Data from outside.** Captions, comments, usernames and other text in the answers come from you, your clients and your audience. The server tells the model to use this text as data, never as instructions.
-- **Limits.** Each signed-in user has 60 requests per minute. All the MCP clients of that user share this limit. Each API key has 60 requests per minute. The REST API and the MCP server share the limit of the key. Above the limit, you get a `429` response with a `Retry-After` header.
+- **Limits.** Each signed-in user has 60 requests per minute. All the MCP clients of that user share this limit. Each API key has 60 requests per minute. The REST API and the MCP server share the limit of the key. Above the limit, you get a `429` response with a `Retry-After` header. Wait for the number of seconds in `Retry-After`, then continue. If sign-in is temporarily unavailable, you get a `503` response with `Retry-After: 30`.
 - **Disconnect an app.** In Storylink, open **Settings › Connected apps** and select **Revoke**. The app loses access on its next request. To use the app again, remove the Storylink connector in the app and add it again.
 - **Keep the API key out of your repository.** Put the key in a local configuration of your client. Do not put it in a file that you commit. You can revoke a key on the Developers page in Storylink.
 
