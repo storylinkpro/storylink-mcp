@@ -18,31 +18,54 @@ import {
 } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 const DEFAULT_URL = 'https://storylink.pro/mcp';
-const KEY_PREFIX = 'sl_live_';
+// A Storylink key is sl_live_ and 32 base64url characters (24 random bytes).
+const KEY_PATTERN = /^sl_live_[A-Za-z0-9_-]{32}$/;
+// Any key-like text, for redaction.
+const KEY_LIKE = /sl_live_[A-Za-z0-9_-]+/g;
+const REDACTED = 'sl_live_…[redacted]';
+const MAX_ERROR_LENGTH = 500;
+const TERMINATE_TIMEOUT_MS = 2000;
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+let apiKey = '';
+
+// Removes the key, and any other key-like text, from text that leaves the
+// process (stderr or a JSON-RPC error).
+function redact(text) {
+  let out = String(text);
+  if (apiKey) out = out.split(apiKey).join(REDACTED);
+  return out.replace(KEY_LIKE, REDACTED);
+}
 
 function fail(message) {
-  process.stderr.write(`storylink-mcp: ${message}\n`);
+  process.stderr.write(`storylink-mcp: ${redact(message)}\n`);
   process.exit(1);
 }
 
 function log(message) {
   // stdout carries the MCP messages, so all logs go to stderr.
-  process.stderr.write(`storylink-mcp: ${message}\n`);
+  process.stderr.write(`storylink-mcp: ${redact(message)}\n`);
 }
 
-const apiKey = (process.env.STORYLINK_API_KEY ?? '').trim();
-if (!apiKey) {
+const rawKey = process.env.STORYLINK_API_KEY ?? '';
+if (!rawKey.trim()) {
   fail('STORYLINK_API_KEY is not set. Create an API key on the Developers page in Storylink and set STORYLINK_API_KEY to it.');
 }
-if (!apiKey.startsWith(KEY_PREFIX)) {
-  fail(`STORYLINK_API_KEY is not a Storylink API key. A key starts with "${KEY_PREFIX}".`);
+if (!KEY_PATTERN.test(rawKey.trim())) {
+  // Never echo the value: it may be a real key with a typo.
+  fail('STORYLINK_API_KEY is not a valid Storylink API key. A key is "sl_live_" and 32 more letters, digits, "-" or "_". Copy it again from the Developers page in Storylink.');
 }
+apiKey = rawKey.trim();
 
 let url;
 try {
   url = new URL(process.env.STORYLINK_MCP_URL || DEFAULT_URL);
 } catch {
   fail('STORYLINK_MCP_URL is not a valid URL.');
+}
+if (url.protocol !== 'https:' && !(url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname))) {
+  // The key must not travel in plain text. http is only for a local test server.
+  fail('STORYLINK_MCP_URL must use https (http is allowed only for localhost).');
 }
 
 const local = new StdioServerTransport();
@@ -59,16 +82,25 @@ let closing = false;
 async function shutdown(code = 0) {
   if (closing) return;
   closing = true;
+  // Best effort: end the server session (HTTP DELETE), but do not wait long.
+  await Promise.race([
+    remote.terminateSession().catch(() => {}),
+    new Promise((resolve) => setTimeout(resolve, TERMINATE_TIMEOUT_MS).unref()),
+  ]);
   await Promise.allSettled([remote.close(), local.close()]);
   process.exit(code);
 }
 
 function errorText(error) {
+  let text = error instanceof Error ? error.message : String(error);
   if (error instanceof StreamableHTTPError && error.code > 0) {
     // The SDK message has the response body but not the status (401, 402, 429, …).
-    return `HTTP ${error.code}: ${error.message}`;
+    text = `HTTP ${error.code}: ${text}`;
   }
-  return error instanceof Error ? error.message : String(error);
+  text = redact(text);
+  // An error page (for example an HTML challenge) can be long.
+  if (text.length > MAX_ERROR_LENGTH) text = `${text.slice(0, MAX_ERROR_LENGTH)}…`;
+  return text;
 }
 
 local.onmessage = (message) => {
