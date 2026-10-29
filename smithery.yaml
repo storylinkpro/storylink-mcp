@@ -1,0 +1,12 @@
+# Smithery (https://smithery.ai)
+#
+# Storylink hosts this server. Smithery does not build or run it, so this
+# file has no build or start configuration.
+#
+# Smithery lists a hosted server by its URL:
+#
+#   smithery mcp publish "https://storylink.pro/mcp" -n @storylinkpro/storylink
+#
+# The server uses Streamable HTTP and the MCP authorization flow
+# (Sign in with Storylink), so it needs no configuration schema.
+# Business API-key users connect directly, as the README shows.
