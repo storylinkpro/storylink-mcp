@@ -14,5 +14,27 @@
       "type": "streamable-http",
       "url": "https://storylink.pro/mcp"
     }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "storylink-mcp",
+      "version": "1.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "STORYLINK_API_KEY",
+          "description": "Your Storylink API key (sl_live_…), from the Developers page in Storylink.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string",
+          "placeholder": "sl_live_…"
+        }
+      ]
+    }
   ]
 }

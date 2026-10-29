@@ -91,6 +91,26 @@ Some MCP clients can start only a local (stdio) server. For these clients, use [
 
 When it first connects, `mcp-remote` opens the Storylink sign-in page in your browser. To use an API key instead, add `"--header", "Authorization: Bearer sl_live_…"` to the end of `args`.
 
+### Claude Desktop (npx)
+
+With an API key, Claude Desktop and other stdio clients can also run the `storylink-mcp` package. It connects to `https://storylink.pro/mcp` with your key. It needs Node.js 18 or later.
+
+```json
+{
+  "mcpServers": {
+    "storylink": {
+      "command": "npx",
+      "args": ["-y", "storylink-mcp"],
+      "env": {
+        "STORYLINK_API_KEY": "sl_live_…"
+      }
+    }
+  }
+}
+```
+
+If `STORYLINK_API_KEY` is not set, or it does not start with `sl_live_`, the package stops with a message.
+
 ## Connect with a Business API key
 
 1. In Storylink, open the **Developers** page and create an API key (`sl_live_…`). A key can be for one workspace or for the full account.

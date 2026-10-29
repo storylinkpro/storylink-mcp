@@ -1,0 +1,43 @@
+{
+  "name": "storylink-mcp",
+  "version": "1.0.0",
+  "mcpName": "io.github.storylinkpro/storylink-mcp",
+  "description": "Run the Storylink MCP server (Instagram stories, posts and reels insights) from stdio-only MCP clients such as Claude Desktop, with a Storylink API key.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "storylink-mcp": "bin/storylink-mcp.js"
+  },
+  "files": [
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/storylink-mcp.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/storylinkpro/storylink-mcp.git"
+  },
+  "homepage": "https://github.com/storylinkpro/storylink-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/storylinkpro/storylink-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "instagram",
+    "storylink",
+    "claude"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2"
+  },
+  "devDependencies": {
+    "zod": "4.6.7"
+  }
+}
