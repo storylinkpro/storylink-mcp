@@ -1,6 +1,6 @@
 {
   "name": "storylink-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcpName": "io.github.storylinkpro/storylink-mcp",
   "description": "Run the Storylink MCP server (Instagram stories, posts and reels insights) from stdio-only MCP clients such as Claude Desktop, with a Storylink API key.",
   "license": "MIT",

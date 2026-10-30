@@ -1,5 +1,6 @@
 # storylink-mcp
 
+[![npm](https://img.shields.io/npm/v/storylink-mcp?color=141412&label=npm)](https://www.npmjs.com/package/storylink-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-141412)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-141412)](https://modelcontextprotocol.io)
 
@@ -25,6 +26,24 @@ You connect with a Storylink API key (`sl_live_…`). Every plan can create keys
 - On the Business plan, a key can create and schedule content only if you create it with **Allow creating and scheduling content**. This key is a write key. It gets 28 tools: the 15 read tools and 13 tools that schedule and change content.
 - You set the permission when you create the key. You cannot change it later. To change it, create a new key.
 - Business keys created before per-key permissions existed keep write access.
+
+## The npm package
+
+[`storylink-mcp`](https://www.npmjs.com/package/storylink-mcp) is on npm. It is a small launcher for clients that can start only a local (stdio) server, such as Claude Desktop. It runs on your computer, reads your key from the `STORYLINK_API_KEY` environment variable and connects to `https://storylink.pro/mcp`. It needs Node.js 18 or later.
+
+You don't have to install it. Your client starts it with `npx`:
+
+```sh
+STORYLINK_API_KEY=sl_live_… npx -y storylink-mcp
+```
+
+To keep a fixed copy on your computer instead, install it globally and use `storylink-mcp` as the command:
+
+```sh
+npm install -g storylink-mcp
+```
+
+Clients that support Streamable HTTP (Claude Code, Cursor, Windsurf and others) don't need the package. They connect to the URL directly, as shown below.
 
 ## Get an API key
 
@@ -217,5 +236,5 @@ Send security problems to admin@storylink.pro.
 
 ## Links
 
-- [Storylink](https://storylink.pro) · [Pricing](https://storylink.pro/en/pricing) · [Privacy](https://storylink.pro/en/legal/privacy) · [Skills](https://github.com/storylinkpro/storylink-skills)
+- [Storylink](https://storylink.pro) · [npm package](https://www.npmjs.com/package/storylink-mcp) · [Pricing](https://storylink.pro/en/pricing) · [Privacy](https://storylink.pro/en/legal/privacy) · [Skills](https://github.com/storylinkpro/storylink-skills)
 - [MIT License](LICENSE)
