@@ -376,4 +376,28 @@ describe('configuration check', () => {
     assert.equal(result.stderr, 'storylink-mcp: STORYLINK_MCP_URL must use https (http is allowed only for localhost).\n');
     assert.equal(result.stdout, '');
   });
+
+  // Each URL looks like localhost, but its real host is evil.com.
+  for (const lookalike of ['http://localhost.evil.com/mcp', 'http://127.0.0.1@evil.com/mcp', 'http://evil.com#@127.0.0.1']) {
+    test(`a plain-http lookalike URL (${lookalike}) exits 1 before sending the key`, async () => {
+      const result = await run({ STORYLINK_API_KEY: KEY, STORYLINK_MCP_URL: lookalike }).exited;
+      assert.equal(result.code, 1);
+      assert.equal(result.stderr, 'storylink-mcp: STORYLINK_MCP_URL must use https (http is allowed only for localhost).\n');
+      assert.equal(result.stdout, '');
+    });
+  }
+
+  test('a short loopback form (http://127.1) is allowed', async () => {
+    const fake = await startFakeServer();
+    const port = new URL(fake.url).port;
+    const { client, transport } = connect({ url: `http://127.1:${port}/mcp` });
+    try {
+      await client.connect(transport);
+      assert.equal(client.getServerVersion()?.name, 'fake-storylink');
+    } finally {
+      await client.close();
+      await transport.close();
+      fake.close();
+    }
+  });
 });

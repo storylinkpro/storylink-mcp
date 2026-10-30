@@ -142,6 +142,16 @@ local.onclose = () => void shutdown(0);
 process.stdin.on('end', () => void shutdown(0));
 process.on('SIGINT', () => void shutdown(0));
 process.on('SIGTERM', () => void shutdown(0));
+// Node's default handler prints the raw error, which is not redacted.
+// Log the redacted text and stop instead.
+process.on('uncaughtException', (error) => {
+  log(errorText(error));
+  void shutdown(1);
+});
+process.on('unhandledRejection', (error) => {
+  log(errorText(error));
+  void shutdown(1);
+});
 
 await remote.start();
 await local.start();

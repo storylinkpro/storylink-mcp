@@ -7,6 +7,8 @@
 #
 #   smithery mcp publish "https://storylink.pro/mcp" -n @storylinkpro/storylink
 #
-# The server uses Streamable HTTP and the MCP authorization flow
-# (Sign in with Storylink), so it needs no configuration schema.
-# Business API-key users connect directly, as the README shows.
+# The server uses Streamable HTTP and a Storylink API key (sl_live_…).
+# Smithery keeps the Authorization header for itself, so send the key in
+# the X-Storylink-Api-Key header. If both headers reach Storylink,
+# Authorization wins, so the gateway must not forward its own bearer.
+# "Sign in with Storylink" (OAuth) is not available yet.
