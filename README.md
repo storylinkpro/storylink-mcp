@@ -125,7 +125,7 @@ Use the URL `https://storylink.pro/mcp` with the Streamable HTTP transport. Send
 - `Authorization: Bearer sl_live_…`
 - `X-Storylink-Api-Key: sl_live_…`
 
-Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If a request has both headers, Storylink uses `Authorization`. So a gateway that sends its own `Authorization` bearer to Storylink must remove it first.
+Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If both headers carry a Storylink key, Authorization is used. If `Authorization` carries something else, such as the gateway's own bearer, Storylink uses the key in `X-Storylink-Api-Key`.
 
 For a client that can start only a local (stdio) server, use `mcp-remote`, as for Claude Desktop.
 
