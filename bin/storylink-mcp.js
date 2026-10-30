@@ -153,5 +153,12 @@ process.on('unhandledRejection', (error) => {
   void shutdown(1);
 });
 
-await remote.start();
-await local.start();
+// A rejection here is not an unhandledRejection event, so catch it to keep
+// the output redacted.
+try {
+  await remote.start();
+  await local.start();
+} catch (error) {
+  log(errorText(error));
+  await shutdown(1);
+}

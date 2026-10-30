@@ -9,7 +9,7 @@ Connect Claude, Cursor or a different MCP client. Then ask about your Instagram 
 
 > "How did last week go on Instagram, and which reel did best?"
 
-Storylink hosts the server at `https://storylink.pro/mcp`. The transport is Streamable HTTP. Most clients connect to the URL directly. For Claude Desktop, the `storylink-mcp` package in this repository runs with `npx`.
+Storylink hosts the server at `https://storylink.pro/mcp`. The transport is Streamable HTTP. Most clients connect to the URL directly. Claude Desktop connects through `mcp-remote`.
 
 You connect with a Storylink API key (`sl_live_…`). Every plan can create keys.
 
@@ -44,9 +44,29 @@ claude mcp add --transport http storylink https://storylink.pro/mcp --header "Au
 
 ### Claude Desktop
 
-Claude Desktop starts local (stdio) servers. The `storylink-mcp` package connects to `https://storylink.pro/mcp` with your key. It needs Node.js 18 or later.
+Claude Desktop starts local (stdio) servers. [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) runs on your computer and connects to `https://storylink.pro/mcp` with your key. It needs Node.js 18 or later.
 
 Open **Settings → Developer → Edit Config** and add this to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "storylink": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://storylink.pro/mcp", "--header", "Authorization:${AUTH_HEADER}"],
+      "env": {
+        "AUTH_HEADER": "Bearer sl_live_…"
+      }
+    }
+  }
+}
+```
+
+Put the header in `env`, as above. Some clients (Claude Desktop on Windows, Cursor) do not keep the spaces inside `args`, so do not write `Authorization: Bearer …` in `args`.
+
+Restart Claude Desktop after you change the file.
+
+**Coming soon: `npx -y storylink-mcp`.** When the `storylink-mcp` package from this repository is on npm, you can use it instead of `mcp-remote`:
 
 ```json
 {
@@ -63,24 +83,6 @@ Open **Settings → Developer → Edit Config** and add this to `claude_desktop_
 ```
 
 If `STORYLINK_API_KEY` is not set, or it is not a valid key, the package stops with a message.
-
-**Alternative: `mcp-remote`.** [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) also works. Put the header in `env`, as below. Some clients (Claude Desktop on Windows, Cursor) do not keep the spaces inside `args`, so do not write `Authorization: Bearer …` in `args`.
-
-```json
-{
-  "mcpServers": {
-    "storylink": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://storylink.pro/mcp", "--header", "Authorization:${AUTH_HEADER}"],
-      "env": {
-        "AUTH_HEADER": "Bearer sl_live_…"
-      }
-    }
-  }
-}
-```
-
-Restart Claude Desktop after you change the file.
 
 ### Cursor
 
@@ -125,7 +127,7 @@ Use the URL `https://storylink.pro/mcp` with the Streamable HTTP transport. Send
 
 Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If a request has both headers, Storylink uses `Authorization`. So a gateway that sends its own `Authorization` bearer to Storylink must remove it first.
 
-For a client that can start only a local (stdio) server, use the `storylink-mcp` package, as for Claude Desktop.
+For a client that can start only a local (stdio) server, use `mcp-remote`, as for Claude Desktop.
 
 ### claude.ai (web and mobile)
 
@@ -134,7 +136,7 @@ The custom connectors on claude.ai cannot send an API key yet. "Sign in with Sto
 ### Errors
 
 - `401`: the key is missing, not valid, revoked or expired.
-- `402` (`plan_not_entitled`) on a write: the plan does not allow writes (Free and Pro), or the key is read-only. The message tells you which. On a read-only key, the write tools are not in the tool list.
+- `402` (`plan_not_entitled`): Storylink has turned off API access for the account. Contact support. A read-only key does not get a `402` on the MCP server: the write tools are not in its tool list. (On the REST API, a write with a read-only key returns `402` with the reason.)
 - `429`: too many requests. Wait for the number of seconds in `Retry-After`, then continue.
 
 ## Tools
