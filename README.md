@@ -9,7 +9,7 @@ Connect Claude, Cursor or a different MCP client. Then ask about your Instagram 
 
 > "How did last week go on Instagram, and which reel did best?"
 
-Storylink hosts the server at `https://storylink.pro/mcp`. The transport is Streamable HTTP. Most clients connect to the URL directly. Claude Desktop connects through `mcp-remote`.
+Storylink hosts the server at `https://storylink.pro/mcp`. The transport is Streamable HTTP. Most clients connect to the URL directly. Claude Desktop connects through the `storylink-mcp` package (`npx -y storylink-mcp`).
 
 You connect with a Storylink API key (`sl_live_…`). Every plan can create keys.
 
@@ -44,9 +44,27 @@ claude mcp add --transport http storylink https://storylink.pro/mcp --header "Au
 
 ### Claude Desktop
 
-Claude Desktop starts local (stdio) servers. [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) runs on your computer and connects to `https://storylink.pro/mcp` with your key. It needs Node.js 18 or later.
+Claude Desktop starts local (stdio) servers. The `storylink-mcp` package runs on your computer and connects to `https://storylink.pro/mcp` with your key. It needs Node.js 18 or later.
 
 Open **Settings → Developer → Edit Config** and add this to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "storylink": {
+      "command": "npx",
+      "args": ["-y", "storylink-mcp"],
+      "env": {
+        "STORYLINK_API_KEY": "sl_live_…"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop after you change the file. If `STORYLINK_API_KEY` is not set, or it is not a valid key, the package stops with a message.
+
+**Alternative: `mcp-remote`.** [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) works too:
 
 ```json
 {
@@ -63,26 +81,6 @@ Open **Settings → Developer → Edit Config** and add this to `claude_desktop_
 ```
 
 Put the header in `env`, as above. Some clients (Claude Desktop on Windows, Cursor) do not keep the spaces inside `args`, so do not write `Authorization: Bearer …` in `args`.
-
-Restart Claude Desktop after you change the file.
-
-**Coming soon: `npx -y storylink-mcp`.** When the `storylink-mcp` package from this repository is on npm, you can use it instead of `mcp-remote`:
-
-```json
-{
-  "mcpServers": {
-    "storylink": {
-      "command": "npx",
-      "args": ["-y", "storylink-mcp"],
-      "env": {
-        "STORYLINK_API_KEY": "sl_live_…"
-      }
-    }
-  }
-}
-```
-
-If `STORYLINK_API_KEY` is not set, or it is not a valid key, the package stops with a message.
 
 ### Cursor
 
@@ -127,7 +125,7 @@ Use the URL `https://storylink.pro/mcp` with the Streamable HTTP transport. Send
 
 Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If both headers carry a Storylink key, Authorization is used. If `Authorization` carries something else, such as the gateway's own bearer, Storylink uses the key in `X-Storylink-Api-Key`.
 
-For a client that can start only a local (stdio) server, use `mcp-remote`, as for Claude Desktop.
+For a client that can start only a local (stdio) server, use `npx -y storylink-mcp`, as for Claude Desktop.
 
 ### claude.ai (web and mobile)
 
