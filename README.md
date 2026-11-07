@@ -142,7 +142,7 @@ Use the URL `https://storylink.pro/mcp` with the Streamable HTTP transport. Send
 - `Authorization: Bearer sl_live_…`
 - `X-Storylink-Api-Key: sl_live_…`
 
-Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If both headers carry a Storylink key, Authorization is used. If `Authorization` carries something else, such as the gateway's own bearer, Storylink uses the key in `X-Storylink-Api-Key`.
+Use `X-Storylink-Api-Key` when a gateway (for example Smithery) keeps the `Authorization` header for itself. If both headers carry a Storylink key, Storylink uses the key in `Authorization`. If `Authorization` carries something else, such as the gateway's own bearer, Storylink uses the key in `X-Storylink-Api-Key`.
 
 For a client that can start only a local (stdio) server, use `npx -y storylink-mcp`, as for Claude Desktop.
 
@@ -153,7 +153,7 @@ The custom connectors on claude.ai cannot send an API key yet. "Sign in with Sto
 ### Errors
 
 - `401`: the key is missing, not valid, revoked or expired.
-- `402` (`plan_not_entitled`): Storylink has turned off API access for the account. Contact support. A read-only key does not get a `402` on the MCP server: the write tools are not in its tool list. (On the REST API, a write with a read-only key returns `402` with the reason.)
+- `402` (`plan_not_entitled`): Storylink turned off API access for the account. Contact support. A read-only key does not get a `402` on the MCP server: the write tools are not in its tool list. (On the REST API, a write with a read-only key returns `402` with the reason.)
 - `429`: too many requests. Wait for the number of seconds in `Retry-After`, then continue.
 
 ## Tools
@@ -183,7 +183,13 @@ These rules apply to the read tools:
 | `get_reel` | `reel_id` | One reel with its video, cover, caption and status |
 | `get_reel_insights` | `reel_id`, `from?`, `to?` | Insight snapshots for a published reel: plays, reach, likes, comments, saves and shares |
 
-`status` is `scheduled`, `publishing`, `published`, `failed` or `cancelled`. `scheduled_after`, `scheduled_before`, `from` and `to` are ISO 8601 UTC times, for example `2026-10-01T00:00:00Z`. Engagement in `top_content` is replies + shares for a story, likes + comments + saves for a post, and likes + comments + saves + shares for a reel. Views on a post is its reach.
+`status` is `scheduled`, `publishing`, `published`, `failed` or `cancelled`. `scheduled_after`, `scheduled_before`, `from` and `to` are ISO 8601 UTC times, for example `2026-10-01T00:00:00Z`. Engagement in `top_content` depends on the type:
+
+- Story: replies + shares.
+- Post: likes + comments + saves.
+- Reel: likes + comments + saves + shares.
+
+Views on a post is its reach.
 
 **Write tools (Business write key only).** A write key also gets `upload_media`, `schedule_story`, `update_story`, `cancel_story`, `retry_story`, `schedule_post`, `update_post`, `cancel_post`, `retry_post`, `schedule_reel`, `update_reel`, `cancel_reel` and `retry_reel_fb_cross_post`. A read-only key does not have these tools. It cannot schedule, change or publish content.
 
