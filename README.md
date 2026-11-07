@@ -242,5 +242,5 @@ Send security problems to admin@storylink.pro.
 
 ## Links
 
-- [Storylink](https://storylink.pro) · [npm package](https://www.npmjs.com/package/storylink-mcp) · [Pricing](https://storylink.pro/en/pricing) · [Privacy](https://storylink.pro/en/legal/privacy) · [Skills](https://github.com/storylinkpro/storylink-skills)
+- [Storylink](https://storylink.pro) · [npm package](https://www.npmjs.com/package/storylink-mcp) · [Pricing](https://storylink.pro/en/pricing) · [Privacy](https://storylink.pro/en/legal/privacy) · [Skills](https://github.com/storylinkpro/storylink-skills) · [instagram-stories-api](https://github.com/storylinkpro/instagram-stories-api)
 - [MIT License](LICENSE)
