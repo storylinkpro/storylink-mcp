@@ -1,0 +1,58 @@
+name: Publish
+
+# Push a tag like v1.0.1 (it must match package.json's version) to publish to npm.
+# npm Trusted Publishing (OIDC): no npm token is stored here, and npm adds provenance.
+# npm stages the version. A maintainer approves it on npmjs.com or with `npm stage approve <id>`.
+#
+# Two jobs. `build` installs the dev dependencies and runs their code, so it
+# cannot get an OIDC token. `publish` can get a token, so it runs no dependency
+# code: it only stages the tarball that `build` made.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - name: Tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      - run: npm test
+      - run: npm pack --ignore-scripts
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tarball
+          path: "*.tgz"
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # Add required reviewers to this environment (Settings > Environments) to gate each release.
+    environment: npm
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Staged publishing needs npm 12 or later.
+      - run: npm install -g npm@12.0.2 --ignore-scripts
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tarball
+      - run: npm stage publish ./*.tgz --access public --ignore-scripts
