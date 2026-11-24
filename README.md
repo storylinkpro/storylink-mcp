@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/storylink-mcp?color=141412&label=npm)](https://www.npmjs.com/package/storylink-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-141412)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-141412)](https://modelcontextprotocol.io)
+[![storylinkpro/storylink-mcp MCP server](https://glama.ai/mcp/servers/storylinkpro/storylink-mcp/badges/score.svg)](https://glama.ai/mcp/servers/storylinkpro/storylink-mcp)
 
 This is the MCP server for **[Storylink](https://storylink.pro)**. Storylink schedules and measures Instagram content (stories, feed posts and reels) for businesses and agencies.
 
